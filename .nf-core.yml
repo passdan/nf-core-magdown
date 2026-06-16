@@ -1,0 +1,15 @@
+repository_type: pipeline
+
+nf_core_version: 4.0.2
+
+lint: {}
+
+template:
+  org: nf-core
+  name: magdown
+  description: nf-core framework for additional downstream analysis of MAG assemblies
+  author: Daniel Pass
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  is_nfcore: true
