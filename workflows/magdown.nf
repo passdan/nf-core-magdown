@@ -3,12 +3,13 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_magdown_pipeline'
+include { ABRICATE_RUN           } from '../modules/nf-core/abricate/run/main'
+include { ABRICATE_SUMMARY       } from '../modules/nf-core/abricate/summary/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,7 +20,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_magd
 workflow MAGDOWN {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet // channel: [ val(meta), path(magdir) ] from samplesheet
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -29,11 +30,38 @@ workflow MAGDOWN {
 
     def ch_versions = channel.empty()
     def ch_multiqc_files = channel.empty()
+
     //
-    // MODULE: Run FastQC
+    // Expand each sample's MAGdir into one channel entry per FASTA file
+    // Emits: [ val(meta + [mag_id: <filename>]), path(fasta) ]
     //
-    FASTQC(ch_samplesheet)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{ _meta, file -> file })
+    def ch_fastas = ch_samplesheet
+        .flatMap { meta, magdir ->
+            magdir.listFiles()
+                .findAll { it.name =~ /\.f(a|asta|na)(\.gz)?$/ }
+                .collect { fasta ->
+                    def mag_id = fasta.name.replaceAll(/\.f(a|asta|na)(\.gz)?$/, '')
+                    [ meta + [mag_id: mag_id, id: mag_id, sample: meta.id], fasta ]
+                }
+        }
+
+    //
+    // MODULE: Run Abricate on each MAG
+    //
+    ABRICATE_RUN(ch_fastas, [])
+
+    ch_versions = ch_versions.mix(ABRICATE_RUN.out.versions_abricate.map { _process, _tool, version -> version })
+
+    //
+    // Group per-MAG reports back by sample for summary
+    //
+    def ch_reports_by_sample = ABRICATE_RUN.out.report
+        .map { meta, report -> [ [id: meta.sample], report ] }
+        .groupTuple()
+
+    ABRICATE_SUMMARY(ch_reports_by_sample)
+
+    ch_multiqc_files = ch_multiqc_files.mix(ABRICATE_RUN.out.report.map { _meta, file -> file })
 
     //
     // Collate and save software versions
@@ -90,8 +118,10 @@ workflow MAGDOWN {
             ]
         }
     )
-    emit:multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
+    emit:
+    multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                                                    // channel: [ path(versions.yml) ]
 }
 
 /*

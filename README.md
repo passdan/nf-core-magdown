@@ -21,17 +21,18 @@
 
 ## Introduction
 
-**nf-core/magdown** is a bioinformatics pipeline that ...
+**nf-core/magdown** is a pipeline for downstream analysis of metagenomic assembled genomes (MAGs) focussing on wastewater samples. 
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+It is designed to initially run from completed nf-core/mag outputs but should be able to accept any MAG inputs.
+
 
 <!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
      workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+
+1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+3. AMR annnotation ([`Abricate`]())
 
 ## Usage
 
@@ -79,10 +80,6 @@ For more details about the output files and reports, please refer to the
 ## Credits
 
 nf-core/magdown was originally written by Daniel Pass.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
 
