@@ -50,7 +50,7 @@ workflow MAGDOWN {
     //
     ABRICATE_RUN(ch_fastas, [])
 
-    ch_versions = ch_versions.mix(ABRICATE_RUN.out.versions_abricate.map { _process, _tool, version -> version })
+    //ch_versions = ch_versions.mix(ABRICATE_RUN.out.versions_abricate.map { _process, _tool, version -> version })
 
     //
     // Group per-MAG reports back by sample for summary

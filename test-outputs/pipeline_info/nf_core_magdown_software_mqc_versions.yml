@@ -1,3 +1,7 @@
+ABRICATE_RUN:
+  abricate: 1.0.1
+ABRICATE_SUMMARY:
+  abricate: 1.0.1
 Workflow:
     nf-core/magdown: v1.0.0dev
     Nextflow: 26.04.3

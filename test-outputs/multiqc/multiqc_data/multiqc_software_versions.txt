@@ -1,3 +1,4 @@
-Sample	fastqc	nf-core/magdown	Nextflow
-FastQC	0.12.1		
+Sample	abricate	nf-core/magdown	Nextflow
+ABRICATE_RUN	1.0.1		
+ABRICATE_SUMMARY	1.0.1		
 Workflow		v1.0.0dev	26.04.3
