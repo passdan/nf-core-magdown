@@ -1,3 +1,5 @@
 sample,MAGdir
-SampleA,/home/passdan/nf-core-magdown/tests/test-MAGs/SampleA
-SampleB,/home/passdan/nf-core-magdown/tests/test-MAGs/SampleB
+FF_i,/mnt/e/MAG-store/IlluminaMAGs/FF/bins
+FF_pb,/mnt/e/MAG-store/PBMAGs/FF/bins
+FFPS_i,/mnt/e/MAG-store/IlluminaMAGs/FFPS/bins
+FFPS_pb,/mnt/e/MAG-store/PBMAGs/FFPS/bins
