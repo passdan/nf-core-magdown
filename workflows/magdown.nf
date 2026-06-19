@@ -10,6 +10,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_magdown_pipeline'
 include { ABRICATE_RUN           } from '../modules/nf-core/abricate/run/main'
 include { ABRICATE_SUMMARY       } from '../modules/nf-core/abricate/summary/main'
+include { PLASMIDFINDER          } from '../modules/nf-core/plasmidfinder/main'   
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,11 +56,31 @@ workflow MAGDOWN {
     //
     // Group per-MAG reports back by sample for summary
     //
-    def ch_reports_by_sample = ABRICATE_RUN.out.report
+    def ch_abricate_reports_by_sample = ABRICATE_RUN.out.report
         .map { meta, report -> [ [id: meta.sample], report ] }
         .groupTuple()
 
-    ABRICATE_SUMMARY(ch_reports_by_sample)
+    ABRICATE_SUMMARY(ch_abricate_reports_by_sample)
+
+    // 
+    // MODULE: Run plasmidfinder on each MAG
+    //
+
+    PLASMIDFINDER(ch_fastas)
+
+    //
+    // Group per-MAG plasmidfinder outputs back by sample for summary
+    //
+    def ch_plasmidfinder_tsvs_by_sample = PLASMIDFINDER.out.tsv
+        .map { meta, tsv -> [ [id: meta.sample], tsv ] }
+        .groupTuple()
+
+    //ch_versions = ch_versions.mix(PLASMIDFINDER.out.versions_plasmidfinder.map { _process, _tool, version -> version })
+
+
+    // 
+    // MODULE: MULTIQC
+    //
 
     ch_multiqc_files = ch_multiqc_files.mix(ABRICATE_RUN.out.report.map { _meta, file -> file })
 
