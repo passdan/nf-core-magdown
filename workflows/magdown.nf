@@ -10,7 +10,9 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_magdown_pipeline'
 include { ABRICATE_RUN           } from '../modules/nf-core/abricate/run/main'
 include { ABRICATE_SUMMARY       } from '../modules/nf-core/abricate/summary/main'
-include { PLASMIDFINDER          } from '../modules/nf-core/plasmidfinder/main'   
+include { PLASMIDFINDER          } from '../modules/nf-core/plasmidfinder/main'
+include { PLASMIDFINDER_SUMMARY  } from '../modules/local/plasmidfinder_summary/main'
+include { PLASMIDFINDER_MATRIX   } from '../modules/local/plasmidfinder_matrix/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,6 +76,18 @@ workflow MAGDOWN {
     def ch_plasmidfinder_tsvs_by_sample = PLASMIDFINDER.out.tsv
         .map { meta, tsv -> [ [id: meta.sample], tsv ] }
         .groupTuple()
+
+    PLASMIDFINDER_SUMMARY(ch_plasmidfinder_tsvs_by_sample)
+
+    //
+    // Collect per-sample summaries into one samples x plasmids matrix
+    //
+    def ch_plasmidfinder_summaries = PLASMIDFINDER_SUMMARY.out.summary
+        .map { _meta, summary -> summary }
+        .collect()
+        .map { summaries -> [ [id: 'all_samples'], summaries ] }
+
+    PLASMIDFINDER_MATRIX(ch_plasmidfinder_summaries)
 
     //ch_versions = ch_versions.mix(PLASMIDFINDER.out.versions_plasmidfinder.map { _process, _tool, version -> version })
 
