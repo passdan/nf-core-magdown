@@ -19,7 +19,9 @@ process PLASMIDFINDER_MATRIX {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    template 'plasmidfinder_matrix.py'
+    """
+    plasmidfinder_matrix.py --prefix ${prefix}
+    """
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
